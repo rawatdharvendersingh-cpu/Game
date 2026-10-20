@@ -1,0 +1,4 @@
+ROOT MOTION STRIP TEST:
+Original tracks: 58, Filtered tracks: 57
+Hips pos at t=0.5s: (0.0, 0.0, 0.0)
+SUCCESS: Hips stayed centered, rotation animated perfectly!

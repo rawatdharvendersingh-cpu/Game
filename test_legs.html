@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head><title>Leg Kinematics Test</title></head>
+<body>
+<script src="lib/three.min.js"></script>
+<script src="lib/fflate.min.js"></script>
+<script src="lib/FBXLoader.js"></script>
+<script>
+const loader = new THREE.FBXLoader();
+loader.load('Boxing (1).fbx', (fbx) => {
+  let leftUpLeg, leftLeg, leftFoot;
+  fbx.traverse(c => {
+    if (c.isBone) {
+      const lower = c.name.toLowerCase();
+      const parentName = c.parent ? c.parent.name.toLowerCase() : '';
+      if (lower.includes('leftupleg') && parentName.includes('hips') && !leftUpLeg) leftUpLeg = c;
+      if (lower.includes('leftleg') && parentName.includes('leftupleg') && !leftLeg) leftLeg = c;
+      if (lower.includes('leftfoot') && parentName.includes('leftleg') && !leftFoot) leftFoot = c;
+    }
+  });
+
+  const getDir = (pParent, pChild) => {
+    fbx.updateMatrixWorld(true);
+    const p1 = new THREE.Vector3(); const p2 = new THREE.Vector3();
+    pParent.getWorldPosition(p1); pChild.getWorldPosition(p2);
+    return p2.sub(p1).normalize();
+  };
+
+  const restQThigh = leftUpLeg.quaternion.clone();
+  const restQShin = leftLeg.quaternion.clone();
+  const restQFoot = leftFoot.quaternion.clone();
+
+  let out = 'NEW GAIT TEST:\n';
+
+  // Test 8 points across walk cycle:
+  for (let i = 0; i < 8; i++) {
+    const phi = (i / 8) * Math.PI * 2;
+    // Stride angle
+    const thigh = Math.cos(phi) * 0.36;
+    
+    // Knee flexion:
+    let knee = 0;
+    if (phi < Math.PI) {
+      // Stance phase: knee nearly straight (supporting weight)
+      knee = -0.06 * Math.sin(phi);
+    } else {
+      // Swing phase: knee lifts foot to clear ground
+      const swingP = (phi - Math.PI) / Math.PI; // 0 to 1
+      knee = -0.58 * Math.sin(swingP * Math.PI);
+    }
+
+    const ankle = Math.sin(phi) * 0.18;
+
+    leftUpLeg.quaternion.copy(restQThigh).rotateX(thigh);
+    leftLeg.quaternion.copy(restQShin).rotateX(knee);
+    leftFoot.quaternion.copy(restQFoot).rotateX(ankle);
+
+    const dThigh = getDir(leftUpLeg, leftLeg);
+    const dShin = getDir(leftLeg, leftFoot);
+
+    out += `phi=${(phi/Math.PI).toFixed(2)}pi | ThighZ=${dThigh.z.toFixed(2)} | ShinZ=${dShin.z.toFixed(2)} | KneeAngle=${knee.toFixed(2)}\n`;
+  }
+
+  fetch('/api/log', { method: 'POST', body: out });
+});
+</script>
+</body>
+</html>

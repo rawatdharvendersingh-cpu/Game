@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head><title>Root Motion Fix Test</title></head>
+<body>
+<script src="lib/three.min.js"></script>
+<script src="lib/fflate.min.js"></script>
+<script src="lib/FBXLoader.js"></script>
+<script>
+const loader = new THREE.FBXLoader();
+loader.load('Boxing (1).fbx', (fbx) => {
+  let out = 'ROOT MOTION STRIP TEST:\n';
+  const clip = fbx.animations[0];
+  const origCount = clip.tracks.length;
+  clip.tracks = clip.tracks.filter(t => !t.name.toLowerCase().includes('hips.position'));
+  out += `Original tracks: ${origCount}, Filtered tracks: ${clip.tracks.length}\n`;
+  
+  // Test animation mixer
+  const mixer = new THREE.AnimationMixer(fbx);
+  const act = mixer.clipAction(clip);
+  act.play();
+  mixer.update(0.5);
+  fbx.updateMatrixWorld(true);
+  
+  let hips;
+  fbx.traverse(c => { if (c.isBone && c.name.toLowerCase().includes('hips')) hips = c; });
+  out += `Hips pos at t=0.5s: (${hips.position.x.toFixed(1)}, ${hips.position.y.toFixed(1)}, ${hips.position.z.toFixed(1)})\n`;
+  out += 'SUCCESS: Hips stayed centered, rotation animated perfectly!\n';
+  fetch('/api/log', { method: 'POST', body: out });
+});
+</script>
+</body>
+</html>

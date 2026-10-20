@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0d1117">
+  <title>Cadillacs & Brawlers: Realistic 3D Strike</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rajdhani:wght@600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="game-container">
+    <!-- Main 3D WebGL Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Floating 3D Enemy Health Bars Container -->
+    <div id="enemy-healthbars-container"></div>
+
+    <!-- Preloader Overlay Screen -->
+    <div id="preloader-overlay">
+      <div class="preloader-card">
+        <div class="preloader-logo">⚡ CADILLACS & BRAWLERS 3D</div>
+        <div class="preloader-sub">REALISTIC ARCADE BATTLEGROUND</div>
+        <div class="preloader-bar-outer">
+          <div class="preloader-bar-inner" id="preloader-bar" style="width: 15%;"></div>
+        </div>
+        <div class="preloader-status" id="preloader-text">INITIALIZING REALISTIC WARZONE...</div>
+        <div class="preloader-hints">
+          <span>🥊 Fists / Boxing Combo | ⚔️ Great Sword Slash | 🧗 Vault Obstacles</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top In-Game Realistic Tactical HUD -->
+    <div id="hud-top" class="hud-overlay">
+      <!-- Player Profile & Health (Located in corner of screen) -->
+      <div class="player-hud">
+        <div class="avatar-box" id="hud-avatar">
+          <div class="avatar-img" id="hud-avatar-icon"></div>
+          <span class="avatar-lvl" id="hud-char-lvl">EXO</span>
+        </div>
+        <div class="bars-container">
+          <div class="name-score-row">
+            <span class="char-name" id="hud-char-name">EXO STRIKER</span>
+            <span class="hud-score" id="hud-score">SCORE: 000000</span>
+          </div>
+          <div class="hp-bar-outer">
+            <div class="hp-bar-inner" id="hud-hp-bar" style="width: 100%;"></div>
+            <span class="hp-text" id="hud-hp-text">100 / 100</span>
+          </div>
+          <div class="sp-bar-outer">
+            <div class="sp-bar-inner" id="hud-sp-bar" style="width: 100%;"></div>
+          </div>
+          <!-- Weapon Switcher Badge (Interactive) -->
+          <button id="btn-weapon-toggle" class="weapon-toggle-btn" title="Click or Press [Q/E] to toggle weapon">
+            <span class="weapon-icon" id="weapon-icon">🥊</span>
+            <span class="weapon-name" id="weapon-mode-text">FISTS (BOXING)</span>
+            <span class="weapon-key-hint">[Q / E]</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stage & Wave Info -->
+      <div class="stage-hud">
+        <div class="stage-badge" id="hud-stage-name">STAGE 1: APOCALYPSE RUINS</div>
+        <div class="sub-badge">
+          <span id="hud-enemy-count">ZOMBIES INCOMING</span>
+          <span class="divider">|</span>
+          <span id="hud-timer">TIME: 03:00</span>
+        </div>
+      </div>
+
+      <!-- Options / Sound / Pause -->
+      <div class="top-actions">
+        <button id="btn-audio" class="icon-btn" title="Toggle Sound">🔊</button>
+        <button id="btn-restart" class="icon-btn" title="Restart Stage">🔄</button>
+      </div>
+    </div>
+
+    <!-- Combo Counter Display -->
+    <div id="combo-display" class="hidden">
+      <div class="combo-number" id="combo-num">x3</div>
+      <div class="combo-label">COMBO!</div>
+    </div>
+
+    <!-- Go Neon Arrow Notification -->
+    <div id="go-banner" class="hidden">
+      <span>GO!</span>
+      <div class="go-arrow">&#10132;</div>
+    </div>
+
+    <!-- Touch Mobile Controls Overlay (Bottom) -->
+    <div id="touch-controls" class="touch-overlay">
+      <!-- Virtual Joystick (Left) -->
+      <div id="joystick-zone">
+        <div id="joystick-base">
+          <div id="joystick-stick"></div>
+          <div class="stick-arrow arrow-u">▲</div>
+          <div class="stick-arrow arrow-d">▼</div>
+          <div class="stick-arrow arrow-l">◀</div>
+          <div class="stick-arrow arrow-r">▶</div>
+        </div>
+      </div>
+
+      <!-- Action Buttons Cluster (Right) -->
+      <div id="buttons-cluster">
+        <div class="cluster-row">
+          <!-- Button A: Punch / Sword Slash -->
+          <button id="btn-attack-a" class="action-btn btn-a">
+            <span class="btn-label" id="btn-a-label">A</span>
+            <span class="btn-action" id="btn-a-text">PUNCH</span>
+          </button>
+
+          <!-- Button B: Kick / Heavy Sword Slam -->
+          <button id="btn-attack-b" class="action-btn btn-b">
+            <span class="btn-label">B</span>
+            <span class="btn-action">KICK</span>
+          </button>
+
+          <!-- Button C: Jump / Vault Obstacle -->
+          <button id="btn-jump" class="action-btn btn-c" title="Jump or Vault Over Barricades">
+            <span class="btn-label">C</span>
+            <span class="btn-action">JUMP</span>
+          </button>
+        </div>
+
+        <div class="cluster-row sub-row">
+          <!-- Weapon Switch Button -->
+          <button id="btn-weapon" class="action-btn btn-w" title="Toggle Great Sword / Fists">
+            <span class="btn-label">⚔️</span>
+            <span class="btn-action">SWORD</span>
+          </button>
+
+          <!-- Special Strike -->
+          <button id="btn-special" class="action-btn btn-s" title="Whirlwind Super Strike">
+            <span class="btn-label">★</span>
+            <span class="btn-action">SUPER</span>
+          </button>
+
+          <!-- Roll / Dash Evasive -->
+          <button id="btn-dash" class="action-btn btn-d" title="Evasive Tactical Roll">
+            <span class="btn-label">💨</span>
+            <span class="btn-action">DASH</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keyboard Hints for Desktop -->
+    <div id="desktop-hint">
+      <span>WASD: Move | <b>J/Z</b>: Punch/Slash | <b>K/X</b>: Kick/Slam | <b>Space/C</b>: Jump/Climb | <b>Q/E</b>: Toggle Sword | <b>L/U</b>: Super | <b>Shift</b>: Dash</span>
+    </div>
+
+    <!-- Stage Clear / Game Over Modal -->
+    <div id="game-modal" class="modal-overlay hidden">
+      <div class="modal-card result-card">
+        <h2 id="modal-headline">STAGE SECURED!</h2>
+        <p id="modal-desc">Area Secured. Moving to the next district...</p>
+        <div class="result-stats">
+          <div class="stat-item">
+            <span>Zombies Neutralized:</span>
+            <strong id="modal-stat-kills">0</strong>
+          </div>
+          <div class="stat-item">
+            <span>Score:</span>
+            <strong id="modal-stat-score">0</strong>
+          </div>
+          <div class="stat-item">
+            <span>Tactical Status:</span>
+            <strong id="modal-stat-stage">SURVIVOR</strong>
+          </div>
+        </div>
+        <div class="result-actions">
+          <button id="btn-modal-action" class="primary-btn" onclick="window.location.reload();">CONTINUE PATROL</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D Engine & Game Libraries -->
+  <script src="lib/three.min.js"></script>
+  <script src="lib/fflate.min.js"></script>
+  <script src="lib/FBXLoader.js"></script>
+  <script src="lib/SkeletonUtils.js"></script>
+  <script src="audio.js"></script>
+  <script src="levels.js"></script>
+  <script src="game3d.js"></script>
+</body>
+</html>
